@@ -4,13 +4,14 @@
 
 Renderer::Renderer( const fractal_land& land, const pheronome& phen, 
                     const position_t& pos_nest, const position_t& pos_food,
-                    const std::vector<ant>& ants )
+                    const std::vector<int>& pos_x, const std::vector<int>& pos_y)
     :   m_ref_land( land ),
         m_land( nullptr ),
         m_ref_phen( phen ),
         m_pos_nest( pos_nest ),
         m_pos_food( pos_food ),
-        m_ref_ants( ants )
+        m_ref_x( pos_x ),
+        m_ref_y( pos_y )
 {
     // Note: La texture sera créée lors du premier display() car on a besoin du renderer de la fenêtre
 }
@@ -64,12 +65,12 @@ void Renderer::display( Window& win, std::size_t const& compteur )
     SDL_SetRenderDrawBlendMode( renderer, SDL_BLENDMODE_BLEND );
     
     // Affichage des fourmis dans le cadran en haut à gauche :
-    for ( auto& ant : m_ref_ants ) {
-        const position_t& pos_ant = ant.get_position( );
+
+    for (int i = 0; i < m_ref_x.size(); ++i) {
         win.set_pen( 0, 255, 255 );
-        win.pset( static_cast<int>( pos_ant.x ), static_cast<int>( pos_ant.y ) );
+        win.pset( m_ref_x[i], m_ref_y[i] );
     }
-    
+
     // Affichage des phéronomes dans le cadran en haut à droite :
     for ( fractal_land::dim_t i = 0; i < m_ref_land.dimensions( ); ++i )
         for ( fractal_land::dim_t j = 0; j < m_ref_land.dimensions( ); ++j ) {
@@ -94,6 +95,7 @@ void Renderer::display( Window& win, std::size_t const& compteur )
         
         // Dessiner la courbe (toujours, même si step <= 1)
         SDL_SetRenderDrawColor( renderer, 255, 255, 127, 255 );
+
         for ( std::size_t i = 0; i < m_curve.size( ) - 1; i++ ) {
             int x1 = static_cast<int>( i * step );
             int y1 = static_cast<int>( ydec - m_curve[i] * h_max_val );

@@ -9,7 +9,8 @@ class Renderer
 public:
     Renderer(  const fractal_land& land, const pheronome& phen, 
                const position_t& pos_nest, const position_t& pos_food,
-               const std::vector<ant>& ants );
+               const std::vector<int>& pos_x, 
+               const std::vector<int>& pos_y);
 
     Renderer(const Renderer& ) = delete;
     ~Renderer();
@@ -21,6 +22,7 @@ private:
     const pheronome& m_ref_phen;
     const position_t& m_pos_nest;
     const position_t& m_pos_food;
-    const std::vector<ant>& m_ref_ants;
+    const std::vector<int>& m_ref_x;
+    const std::vector<int>& m_ref_y;
     std::vector<std::size_t> m_curve;    
 };
