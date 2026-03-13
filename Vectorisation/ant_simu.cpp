@@ -15,7 +15,7 @@ void advance_time( const fractal_land& land, pheronome& phen,
                    std::vector<int>& pos_x, std::vector<int>& pos_y,
                    std::vector<char>& loaded, std::vector<uint32_t>& seeds, std::size_t& cpteur )
 {
-    # pragma omp parallel for
+    //# pragma omp parallel for
     for ( size_t i = 0; i < pos_x.size(); ++i ){
         int& my_pos_x   = pos_x[i];
         int& my_pos_y = pos_y[i];

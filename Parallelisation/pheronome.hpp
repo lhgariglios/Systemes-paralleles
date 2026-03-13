@@ -111,12 +111,11 @@ public:
         MPI_Comm_rank(comm, &rank);
         MPI_Comm_size(comm, &size);
         
-        // Tamanho total: m_stride * m_stride * 2 doubles
         int total_size = m_stride * m_stride * 2;
         
         std::vector<double> all_pheromones;
         if (rank == 0) {
-            all_pheromones.resize(total_size * size);  // CORRIGIDO: size ao invés do comentário
+            all_pheromones.resize(total_size * size); 
         }
         
         std::vector<int> sendcounts(size, total_size);
@@ -125,18 +124,16 @@ public:
             displs[i] = displs[i-1] + total_size;
         }
         
-        // 1. Todos enviam seus mapas para rank 0
+        // Envoie les données vers le processus 0
         MPI_Gatherv(m_map_of_pheronome.data(), total_size, MPI_DOUBLE,
                     rank == 0 ? all_pheromones.data() : nullptr,
                     sendcounts.data(), displs.data(), MPI_DOUBLE, 0, comm);
         
-        // 2. Rank 0 calcula a média
+        // Calcul de la moyenne
         if (rank == 0) {
-            // DEPOIS - CORRETO:
             for (auto& p : m_map_of_pheronome) {
                 p = {0., 0.};
             }
-
             for (int proc = 0; proc < size; ++proc) {
                 double* proc_data = &all_pheromones[proc * total_size];
                 for (int i = 0; i < total_size/2; ++i) {
@@ -147,7 +144,7 @@ public:
             cl_update();
         }
         
-        // 3. Broadcast do resultado para todos
+        // Broadcast 
         MPI_Bcast(m_map_of_pheronome.data(), total_size, MPI_DOUBLE, 0, comm);
     }
 

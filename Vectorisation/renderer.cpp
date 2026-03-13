@@ -72,7 +72,7 @@ void Renderer::display( Window& win, std::size_t const& compteur )
     }
 
     // Affichage des phéronomes dans le cadran en haut à droite :
-    for ( fractal_land::dim_t i = 0; i < m_ref_land.dimensions( ); ++i )
+    for ( fractal_land::dim_t i = 0; i < m_ref_land.dimensions( ); ++i ){
         for ( fractal_land::dim_t j = 0; j < m_ref_land.dimensions( ); ++j ) {
             double r = std::min( 1., (double)m_ref_phen( i, j )[0] );
             double g = std::min( 1., (double)m_ref_phen( i, j )[1] );
@@ -82,7 +82,7 @@ void Renderer::display( Window& win, std::size_t const& compteur )
                 win.pset( static_cast<int>( i + m_ref_land.dimensions( ) + 10 ), static_cast<int>( j ) );
             }
         }
-    
+    }
     // Affichage de la courbe d'enfouragement :
     m_curve.push_back(compteur);
     if ( m_curve.size( ) > 1 ) {

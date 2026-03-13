@@ -18,7 +18,6 @@ void advance_time( const fractal_land& land, pheronome& phen,
                    std::vector<int>& pos_x, std::vector<int>& pos_y,
                    std::vector<char>& loaded, std::vector<uint32_t>& seeds, std::size_t& cpteur )
 {
-    # pragma omp parallel for
     for ( size_t i = 0; i < pos_x.size(); ++i ){
         int& my_pos_x   = pos_x[i];
         int& my_pos_y = pos_y[i];
@@ -96,7 +95,7 @@ int main(int argc, char* argv[])
 
     std::size_t n_iters = 5000;
 
-    std::size_t seed = 2026 + rank; // Graine pour la génération aléatoire ( reproductible )
+    std::size_t seed = 2026 + rank; // Graine pour la génération aléatoire 
     const int nb_ants = 5000; // Nombre de fourmis
     const double eps = 0.8;  // Coefficient d'exploration
     const double alpha=0.7; // Coefficient de chaos
@@ -153,7 +152,7 @@ int main(int argc, char* argv[])
     // On crée toutes les fourmis dans la fourmilière.
     pheronome phen(land.dimensions(), pos_food, pos_nest, alpha, beta);
 
-    // Calcular quantidades e displacements para Gatherv
+    // Calcul des displacements pour Gatherv
     std::vector<int> sendcounts(size);
     std::vector<int> displs(size, 0);
 
@@ -162,6 +161,7 @@ int main(int argc, char* argv[])
         if (i > 0) displs[i] = displs[i-1] + sendcounts[i-1];
     }
 
+    // Position de toutes les fourmis
     std::vector<int> all_pos_x(nb_ants);
     std::vector<int> all_pos_y(nb_ants);
 
@@ -197,9 +197,12 @@ int main(int argc, char* argv[])
         std::chrono::duration<double> d_advance = t1 - t0;
         t_advance_ms += d_advance.count() * 1000.0/n_iters;
 
+        // Synchronisation des phéromones
         phen.sync_pheromones(MPI_COMM_WORLD);
+        // Synchronisation de nourriture
         MPI_Allreduce(&local_food, &global_food, 1, MPI_UNSIGNED_LONG, MPI_SUM, MPI_COMM_WORLD);
 
+        // Synchronisation des positions des fourmis
         if (rank == 0) {
             MPI_Gatherv(pos_x.data(), pos_x.size(), MPI_INT, 
                     all_pos_x.data(), sendcounts.data(), displs.data(), MPI_INT,
@@ -215,6 +218,8 @@ int main(int argc, char* argv[])
                     nullptr, nullptr, nullptr, MPI_INT,
                     0, MPI_COMM_WORLD);
         }       
+
+        MPI_Barrier(MPI_COMM_WORLD);
 
         // Renderer rank 0
         if (rank == 0) {
@@ -236,11 +241,14 @@ int main(int argc, char* argv[])
             cont_loop = false;
             std::cout << "Iter " << it  << "rank " << rank << " advance_time = " << t_advance_ms << " ms, " << "render = " << t_render_ms << " ms" << std::endl;
         }else if(it == n_iters){
+            cont_loop = false;
             std::cout << "Iter " << it  << "rank " << rank << " advance_time = " << t_advance_ms << " ms"<< std::endl;
         }
         //SDL_Delay(10);
     }
-    if (rank == 0) SDL_Quit();
+    if (rank == 0) {
+        SDL_Quit();
+    }
     MPI_Finalize();
     return 0;
 }
